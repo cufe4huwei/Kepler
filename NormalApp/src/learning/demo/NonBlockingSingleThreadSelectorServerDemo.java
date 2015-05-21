@@ -35,6 +35,7 @@ public class NonBlockingSingleThreadSelectorServerDemo {
 			Iterator<SelectionKey> itKeys = selector.selectedKeys().iterator();
 			while(itKeys.hasNext()){
 				SelectionKey key = itKeys.next();
+				itKeys.remove();
 				if(key.isValid()){
 					if(key.isAcceptable()){
 						accept(key);
@@ -44,7 +45,6 @@ public class NonBlockingSingleThreadSelectorServerDemo {
 						write(key);
 					}
 				}
-				itKeys.remove();
 			}
 		}
 		
@@ -52,6 +52,7 @@ public class NonBlockingSingleThreadSelectorServerDemo {
 	
 	private static void write(SelectionKey key) throws IOException {
 		// TODO Auto-generated method stub
+		Utils.log("write %s", key);
 		SocketChannel client = (SocketChannel) key.channel();
 		Queue<ByteBuffer> data = pendingData.get(client);
 		ByteBuffer buffer;
@@ -63,15 +64,18 @@ public class NonBlockingSingleThreadSelectorServerDemo {
 				return;
 			}
 		}
+		client.register(selector, SelectionKey.OP_READ);
 	}
 
 	private static void read(SelectionKey key) throws IOException {
 		// TODO Auto-generated method stub
+		Utils.log("read %s", key);
 		SocketChannel client = (SocketChannel) key.channel();
 		ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
 		int read = client.read(buffer);
 		if(read == -1){
 			pendingData.remove(client);
+			client.close();
 			return;
 		}
 		buffer.flip();
@@ -84,6 +88,7 @@ public class NonBlockingSingleThreadSelectorServerDemo {
 
 	private static void accept(SelectionKey key) throws IOException {
 		// TODO Auto-generated method stub
+		Utils.log("accept %s", key);
 		ServerSocketChannel channel = (ServerSocketChannel) key.channel();
 		SocketChannel client = channel.accept();
 		client.configureBlocking(false);
