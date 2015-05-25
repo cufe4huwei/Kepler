@@ -23,7 +23,7 @@ public class NonBlockingSingleThreadSelectorServerDemo {
 		ServerSocketChannel server = ServerSocketChannel.open();
 		server.bind(new InetSocketAddress("localhost", 8080));
 		server.configureBlocking(false);
-		Utils.log("An instance of server socket is created");
+		Utils.log("AN instance of server socket is created");
 		
 		selector = Selector.open();
 		server.register(selector, SelectionKey.OP_ACCEPT);
